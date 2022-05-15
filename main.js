@@ -57,7 +57,8 @@ const NES_COLOR_PALETTE = [
     "#a0a2a0",
 ];
 
-const TILE_SCALE = 2
+const TILE_SCALE = 2;
+const TILE_SIZE = 8*TILE_SCALE;
 
 const NAME_TABLE_WIDTH = 256
 const NAME_TABLE_HEIGHT = 240
@@ -198,6 +199,7 @@ BinaryFileLoad.prototype.addOnLoad = function(callback) {
     });
 }
 
+
 function Gui() {
     this.colorPicker = new ColorPicker();
     this.colorPicker.hide();
@@ -215,15 +217,34 @@ function Gui() {
     this.patternTableCanvas = patternTableCanvas;
 }
 
-Gui.prototype.reloadPatternTableCanvas = function(model) {
-    let tile_size = 8*TILE_SCALE;
+Gui.renderTile = function(ctx, chr, tile, colorArray, x, y) {
+    let tileStartIndex = tile * 16;
+    for (let row = 0; row < 8; ++row) {
+        let rowLow = chr[tileStartIndex+row];
+        let rowHigh = chr[tileStartIndex+row+8];
+        for (let col = 0; col < 8; ++col) {
+            let px = (rowLow & 1) | ((rowHigh & 1) << 1);
+
+            let canvasX = x + (7 - col)*TILE_SCALE;
+            let canvasY = y + row*TILE_SCALE;
+            ctx.fillStyle = colorArray[px];
+            ctx.fillRect(canvasX, canvasY, TILE_SCALE, TILE_SCALE);
+
+            rowLow >>= 1;
+            rowHigh >>= 1;
+        }
+    }
+}
+
+Gui.prototype.renderPatternTableCanvas = function(model) {
     let ctx = this.patternTableCanvas.getContext("2d");
-    ctx.imageSmoothingEnabled = false;
+    let colorArray = model.colors[model.curPalette];
     for (let y = 0; y < 16; ++y) {
         for (let x = 0; x < 16; ++x) {
-            let pixelX = x*tile_size;
-            let pixelY = y*tile_size;
-            ctx.drawImage(model.patterns[y*16+x], pixelX, pixelY, tile_size, tile_size);
+            let tile = y*16 + x;
+            let pixelX = x*TILE_SIZE;
+            let pixelY = y*TILE_SIZE;
+            Gui.renderTile(ctx, model.curChr, tile, colorArray, pixelX, pixelY);
         }
     }
 };
@@ -241,39 +262,6 @@ function GuiModel() {
     ];
 
     this.curChr = null;
-    this.patterns = [];
-    for (let i = 0; i < 256; ++i) {
-        let canvas = document.createElement("canvas");
-        canvas.width = 8;
-        canvas.height = 8;
-        this.patterns.push(canvas);
-    }
-}
-
-GuiModel.prototype.loadPatternTable = function(colorArray, chr) {
-    this.curChr = chr;
-    let tileStartIndex = 0;
-    for (let tileCanvas of this.patterns) {
-        let ctx = tileCanvas.getContext("2d");
-        for (let row = 0; row < 8; ++row) {
-            let rowLow = chr[tileStartIndex+row];
-            let rowHigh = chr[tileStartIndex+row+8];
-            for (let col = 0; col < 8; ++col) {
-                let px = (rowLow & 1) | ((rowHigh & 1) << 1);
-                ctx.fillStyle = colorArray[px];
-                ctx.fillRect(7-col, row, 1, 1);
-
-                rowLow >>= 1;
-                rowHigh >>= 1;
-            }
-        }
-        tileStartIndex += 16;
-    }
-};
-
-function reloadCurrentChr(model, gui) {
-    model.loadPatternTable(model.colors[model.curPalette], model.curChr);
-    gui.reloadPatternTableCanvas(model);
 }
 
 var MODEL
@@ -289,14 +277,18 @@ function main() {
 
     gui.paletteOptionList.addOnOptionSelect((e, option) => {
         model.curPalette = option.palette;
-        reloadCurrentChr(model, gui);
+        gui.renderPatternTableCanvas(model);
     });
 
     gui.colorPicker.addOnColorClick((e, cell, colorValue) => {
         gui.colorPicker.hide();
         let color = model.colorPickerTarget.color;
         let palette = model.colorPickerTarget.palette;
-        if (color == 0) {
+
+        let updatingBackgroundColor = (color == 0);
+        let updatingCurPatternTableCanvas = (updatingBackgroundColor || palette == model.curPalette);
+
+        if (updatingBackgroundColor) {
             for (let i = 0; i < 4; ++i) {
                 model.colors[i][0] = colorValue;
                 gui.paletteOptionList.options[i].buttons[0].setColor(colorValue);
@@ -306,14 +298,14 @@ function main() {
             gui.paletteOptionList.options[palette].buttons[color].setColor(colorValue);
         }
 
-        if (palette == model.curPalette) {
-            reloadCurrentChr(model, gui);
+        if (updatingCurPatternTableCanvas) {
+            gui.renderPatternTableCanvas(model);
         }
     });
 
     gui.patternTableFileLoad.addOnLoad((e, input, value) => {
-        model.loadPatternTable(model.colors[0], value);
-        gui.reloadPatternTableCanvas(model);
+        model.curChr = value;
+        gui.renderPatternTableCanvas(model);
     });
 
     MODEL = model
