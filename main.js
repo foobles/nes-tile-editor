@@ -124,6 +124,7 @@ function PaletteOptionList(userState, colorPicker) {
         this.options.push(option);
         optionList.appendChild(option.element);
     }
+    this.options[0].element.querySelector(`input[type="radio"]`).defaultChecked = true;
     this.element = optionList;
 }
 
