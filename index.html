@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf8">
+        <title>NES Tile Map Editor</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+
+    <body>
+        <div class="page">
+           <div class="content-container">
+                <div class="center-column-container">
+                    <h1> NES Tile Map Editor </h1>
+                    <h3> By Foobles </h3>
+                </div>
+
+                <div class="row-container">
+                    <div>
+                        <div>
+                            <a download="map">
+                                <button> Download Tile Map </button>
+                            </a>
+                        </div>
+                        <canvas class="tile-grid-canvas" id="name-table-canvas"></canvas>
+                        <div id="palette-option-list"></div>
+                    </div>
+
+                    <div>
+                        <div>
+                            <input type="file" id="pattern-table-upload">
+                        </div>
+                        <canvas class="tile-grid-canvas" id="pattern-table-canvas"></canvas>
+                    </div>
+                </div>
+           </div>
+        </div>
+
+
+        <div class="color-picker" id="color-picker">
+            <div class="color-picker__grid">
+                <span class="color-picker__title-bar">
+                    Color Picker
+                    <button class="color-picker__close-button">x</button>
+                </span>
+            </div>
+        </div>
+
+
+        <template id="color-button-template">
+            <button class="color-button">
+                <div class="color-button__color-rect"></div>
+            </button>
+        </template>
+
+        <template id="palette-option-template">
+            <div class="palette-option widget">
+                <input type="radio" class="palette-option__radio" name="palette-option">
+                <label class="palette-option__label"></label>
+            </div>
+        </template>
+
+        <script src="main.js"></script>
+    </body>
+</html>
