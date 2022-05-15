@@ -178,7 +178,7 @@ ColorPicker.prototype.hide = function() {
     this.element.hidden = true;
 };
 
-function BinaryUpload(element) {
+function BinaryFileLoad(element) {
     let input = element;
     let reader = new FileReader();
     this.element = element;
@@ -192,7 +192,7 @@ function BinaryUpload(element) {
     });
 }
 
-BinaryUpload.prototype.addOnUpload = function(callback) {
+BinaryFileLoad.prototype.addOnLoad = function(callback) {
     this.reader.addEventListener("load", (e) => {
         callback(e, this, new Uint8Array(this.reader.result));
     });
@@ -202,7 +202,7 @@ function Gui() {
     this.colorPicker = new ColorPicker();
     this.colorPicker.hide();
     this.paletteOptionList = new PaletteOptionList();
-    this.patternTableUpload = new BinaryUpload(document.getElementById("pattern-table-upload"));
+    this.patternTableFileLoad = new BinaryFileLoad(document.getElementById("pattern-table-file-load"));
 
     let nameTableCanvas = document.getElementById("name-table-canvas");
     let patternTableCanvas = document.getElementById("pattern-table-canvas");
@@ -301,7 +301,7 @@ function main() {
         }
     });
 
-    gui.patternTableUpload.addOnUpload((e, input, value) => {
+    gui.patternTableFileLoad.addOnLoad((e, input, value) => {
         model.loadPatternTable(model.colors[0], value);
         gui.reloadPatternTableCanvas(model);
     });
