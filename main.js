@@ -271,6 +271,11 @@ GuiModel.prototype.loadPatternTable = function(colorArray, chr) {
     }
 };
 
+function reloadCurrentChr(model, gui) {
+    model.loadPatternTable(model.colors[model.curPalette], model.curChr);
+    gui.reloadPatternTableCanvas(model);
+}
+
 var MODEL
 
 function main() {
@@ -284,6 +289,7 @@ function main() {
 
     gui.paletteOptionList.addOnOptionSelect((e, option) => {
         model.curPalette = option.palette;
+        reloadCurrentChr(model, gui);
     });
 
     gui.colorPicker.addOnColorClick((e, cell, colorValue) => {
@@ -298,6 +304,10 @@ function main() {
         } else {
             model.colors[palette][color] = colorValue;
             gui.paletteOptionList.options[palette].buttons[color].setColor(colorValue);
+        }
+
+        if (palette == model.curPalette) {
+            reloadCurrentChr(model, gui);
         }
     });
 
