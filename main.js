@@ -60,11 +60,13 @@ const NES_COLOR_PALETTE = [
 const TILE_SCALE = 2;
 const TILE_SIZE = 8*TILE_SCALE;
 
-const NAME_TABLE_WIDTH = 256
-const NAME_TABLE_HEIGHT = 240
+const NAME_TABLE_WIDTH = 256;
+const NAME_TABLE_HEIGHT = 240;
 
-const PATTERN_TABLE_WIDTH = 128
-const PATTERN_TABLE_HEIGHT = 128
+const PATTERN_TABLE_WIDTH = 128;
+const PATTERN_TABLE_HEIGHT = 128;
+
+const SELECTED_TILE_SCALE = 8;
 
 function ColorButton(colorIndex) {
     let fragment = document.getElementById("color-button-template").content.cloneNode(true);
@@ -209,13 +211,17 @@ function Gui() {
 
     let nameTableCanvas = document.getElementById("name-table-canvas");
     let patternTableCanvas = document.getElementById("pattern-table-canvas");
+    let curTileCanvas = document.getElementById("cur-tile-canvas");
     nameTableCanvas.width = NAME_TABLE_WIDTH * TILE_SCALE;
     nameTableCanvas.height = NAME_TABLE_HEIGHT * TILE_SCALE;
     patternTableCanvas.width = PATTERN_TABLE_WIDTH * TILE_SCALE;
     patternTableCanvas.height = PATTERN_TABLE_HEIGHT * TILE_SCALE;
+    curTileCanvas.width = 8*SELECTED_TILE_SCALE;
+    curTileCanvas.height = 8*SELECTED_TILE_SCALE;
 
     this.nameTableCanvas = nameTableCanvas;
     this.patternTableCanvas = patternTableCanvas;
+    this.curTileCanvas = curTileCanvas;
 }
 
 Gui.renderTile = function(ctx, chr, tile, renderOpt) {
@@ -258,6 +264,21 @@ Gui.prototype.renderPatternTableCanvas = function(model) {
     }
 };
 
+Gui.prototype.renderCurTileCanvas = function(model) {
+    let ctx = this.curTileCanvas.getContext("2d");
+    Gui.renderTile(ctx, model.curChr, model.curTile, {
+        x: 0,
+        y: 0,
+        colorArray: model.colors[model.curPalette],
+        scale: SELECTED_TILE_SCALE,
+    });
+};
+
+Gui.prototype.renderTilePaletteSection = function(model) {
+    this.renderPatternTableCanvas(model);
+    this.renderCurTileCanvas(model);
+};
+
 
 function GuiModel() {
     this.curTile = 0;
@@ -286,7 +307,7 @@ function main() {
 
     gui.paletteOptionList.addOnOptionSelect((e, option) => {
         model.curPalette = option.palette;
-        gui.renderPatternTableCanvas(model);
+        gui.renderTilePaletteSection(model);
     });
 
     gui.colorPicker.addOnColorClick((e, cell, colorValue) => {
@@ -308,13 +329,20 @@ function main() {
         }
 
         if (updatingCurPatternTableCanvas) {
-            gui.renderPatternTableCanvas(model);
+            gui.renderTilePaletteSection(model);
         }
     });
 
     gui.patternTableFileLoad.addOnLoad((e, input, value) => {
         model.curChr = value;
-        gui.renderPatternTableCanvas(model);
+        gui.renderTilePaletteSection(model);
+    });
+
+    gui.patternTableCanvas.addEventListener("click", (e) => {
+        let tileX = Math.floor(e.offsetX / TILE_SIZE);
+        let tileY = Math.floor(e.offsetY / TILE_SIZE);
+        model.curTile = tileY * 16 + tileX;
+        gui.renderCurTileCanvas(model);
     });
 
     MODEL = model

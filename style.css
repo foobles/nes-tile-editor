@@ -35,6 +35,11 @@ body {
     outline: 2px solid black;
 }
 
+.tile-grid-canvas--cur-tile {
+    display: block;
+    margin-top: 8px;
+}
+
 .widget {
     background-color: lightgray;
     padding: 4px;
