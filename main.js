@@ -218,7 +218,10 @@ function Gui() {
     this.patternTableCanvas = patternTableCanvas;
 }
 
-Gui.renderTile = function(ctx, chr, tile, colorArray, x, y) {
+Gui.renderTile = function(ctx, chr, tile, renderOpt) {
+    let x = renderOpt.x;
+    let y = renderOpt.y;
+    let scale = renderOpt.scale;
     let tileStartIndex = tile * 16;
     for (let row = 0; row < 8; ++row) {
         let rowLow = chr[tileStartIndex+row];
@@ -226,10 +229,10 @@ Gui.renderTile = function(ctx, chr, tile, colorArray, x, y) {
         for (let col = 0; col < 8; ++col) {
             let px = (rowLow & 1) | ((rowHigh & 1) << 1);
 
-            let canvasX = x + (7 - col)*TILE_SCALE;
-            let canvasY = y + row*TILE_SCALE;
-            ctx.fillStyle = colorArray[px];
-            ctx.fillRect(canvasX, canvasY, TILE_SCALE, TILE_SCALE);
+            let canvasX = x + (7 - col)*scale;
+            let canvasY = y + row*scale;
+            ctx.fillStyle = renderOpt.colorArray[px];
+            ctx.fillRect(canvasX, canvasY, scale, scale);
 
             rowLow >>= 1;
             rowHigh >>= 1;
@@ -245,7 +248,12 @@ Gui.prototype.renderPatternTableCanvas = function(model) {
             let tile = y*16 + x;
             let pixelX = x*TILE_SIZE;
             let pixelY = y*TILE_SIZE;
-            Gui.renderTile(ctx, model.curChr, tile, colorArray, pixelX, pixelY);
+            Gui.renderTile(ctx, model.curChr, tile, {
+                x: pixelX,
+                y: pixelY,
+                colorArray: colorArray,
+                scale: TILE_SCALE,
+            });
         }
     }
 };
