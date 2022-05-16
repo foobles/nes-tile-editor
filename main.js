@@ -57,14 +57,23 @@ const NES_COLOR_PALETTE = [
     "#a0a2a0",
 ];
 
+const NUM_PALETTES = 4;
+const NUM_PALETTE_COLORS = 4;
+
 const TILE_SCALE = 2;
 const TILE_SIZE = 8*TILE_SCALE;
 
-const NAME_TABLE_WIDTH = 256;
-const NAME_TABLE_HEIGHT = 240;
+const NAME_TABLE_TILE_WIDTH = 32;
+const NAME_TABLE_TILE_HEIGHT = 30;
 
-const PATTERN_TABLE_WIDTH = 128;
-const PATTERN_TABLE_HEIGHT = 128;
+const NAME_TABLE_PX_WIDTH = TILE_SIZE*NAME_TABLE_TILE_WIDTH;
+const NAME_TABLE_PX_HEIGHT = TILE_SIZE*NAME_TABLE_TILE_HEIGHT;
+
+const PATTERN_TABLE_TILE_WIDTH = 16;
+const PATTERN_TABLE_TILE_HEIGHT = 16;
+
+const PATTERN_TABLE_PX_WIDTH = TILE_SIZE*PATTERN_TABLE_TILE_WIDTH;
+const PATTERN_TABLE_PX_HEIGHT = TILE_SIZE*PATTERN_TABLE_TILE_HEIGHT;
 
 const SELECTED_TILE_SCALE = 8;
 
@@ -97,7 +106,7 @@ function PaletteOption(palette) {
     label.textContent = `Palette ${palette}`;
 
     this.buttons = [];
-    for (let i = 0; i < 4; ++i) {
+    for (let i = 0; i < NUM_PALETTE_COLORS; ++i) {
         let button = new ColorButton({ palette: palette, color: i });
         this.buttons.push(button);
         option.appendChild(button.element);
@@ -121,7 +130,7 @@ function PaletteOptionList(userState, colorPicker) {
     let optionList = document.getElementById("palette-option-list");
 
     this.options = [];
-    for (let i = 0; i < 4; ++i) {
+    for (let i = 0; i < NUM_PALETTES; ++i) {
         option = new PaletteOption(i);
         this.options.push(option);
         optionList.appendChild(option.element);
@@ -212,10 +221,10 @@ function Gui() {
     let nameTableCanvas = document.getElementById("name-table-canvas");
     let patternTableCanvas = document.getElementById("pattern-table-canvas");
     let curTileCanvas = document.getElementById("cur-tile-canvas");
-    nameTableCanvas.width = NAME_TABLE_WIDTH * TILE_SCALE;
-    nameTableCanvas.height = NAME_TABLE_HEIGHT * TILE_SCALE;
-    patternTableCanvas.width = PATTERN_TABLE_WIDTH * TILE_SCALE;
-    patternTableCanvas.height = PATTERN_TABLE_HEIGHT * TILE_SCALE;
+    nameTableCanvas.width = NAME_TABLE_PX_WIDTH;
+    nameTableCanvas.height = NAME_TABLE_PX_HEIGHT;
+    patternTableCanvas.width = PATTERN_TABLE_PX_WIDTH;
+    patternTableCanvas.height = PATTERN_TABLE_PX_HEIGHT;
     curTileCanvas.width = 8*SELECTED_TILE_SCALE;
     curTileCanvas.height = 8*SELECTED_TILE_SCALE;
 
@@ -249,9 +258,9 @@ Gui.renderTile = function(ctx, chr, tile, renderOpt) {
 Gui.prototype.renderPatternTableCanvas = function(model) {
     let ctx = this.patternTableCanvas.getContext("2d");
     let colorArray = model.colors[model.curPalette];
-    for (let y = 0; y < 16; ++y) {
-        for (let x = 0; x < 16; ++x) {
-            let tile = y*16 + x;
+    for (let y = 0; y < PATTERN_TABLE_TILE_HEIGHT; ++y) {
+        for (let x = 0; x < PATTERN_TABLE_TILE_WIDTH; ++x) {
+            let tile = y*PATTERN_TABLE_TILE_WIDTH + x;
             let pixelX = x*TILE_SIZE;
             let pixelY = y*TILE_SIZE;
             Gui.renderTile(ctx, model.curChr, tile, {
@@ -285,10 +294,10 @@ function GuiModel() {
     this.curPalette = 0;
     this.colorPickerTarget = null;
     this.colors = [
-        Array(4).fill("#000000"),
-        Array(4).fill("#000000"),
-        Array(4).fill("#000000"),
-        Array(4).fill("#000000"),
+        Array(NUM_PALETTE_COLORS).fill("#000000"),
+        Array(NUM_PALETTE_COLORS).fill("#000000"),
+        Array(NUM_PALETTE_COLORS).fill("#000000"),
+        Array(NUM_PALETTE_COLORS).fill("#000000"),
     ];
 
     this.curChr = null;
@@ -319,7 +328,7 @@ function main() {
         let updatingCurPatternTableCanvas = (updatingBackgroundColor || palette == model.curPalette);
 
         if (updatingBackgroundColor) {
-            for (let i = 0; i < 4; ++i) {
+            for (let i = 0; i < NUM_PALETTES; ++i) {
                 model.colors[i][0] = colorValue;
                 gui.paletteOptionList.options[i].buttons[0].setColor(colorValue);
             }
@@ -341,7 +350,7 @@ function main() {
     gui.patternTableCanvas.addEventListener("click", (e) => {
         let tileX = Math.floor(e.offsetX / TILE_SIZE);
         let tileY = Math.floor(e.offsetY / TILE_SIZE);
-        model.curTile = tileY * 16 + tileX;
+        model.curTile = tileY * PATTERN_TABLE_TILE_WIDTH + tileX;
         gui.renderCurTileCanvas(model);
     });
 
