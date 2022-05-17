@@ -69,6 +69,9 @@ const NAME_TABLE_TILE_HEIGHT = 30;
 const NAME_TABLE_PX_WIDTH = TILE_SIZE*NAME_TABLE_TILE_WIDTH;
 const NAME_TABLE_PX_HEIGHT = TILE_SIZE*NAME_TABLE_TILE_HEIGHT;
 
+const ATTRIBUTE_TABLE_TILE_WIDTH = 16;
+const ATTRIBUTE_TABLE_TILE_HEIGHT = 15;
+
 const PATTERN_TABLE_TILE_WIDTH = 16;
 const PATTERN_TABLE_TILE_HEIGHT = 16;
 
@@ -211,6 +214,17 @@ BinaryFileLoad.prototype.addOnLoad = function(callback) {
     });
 }
 
+function patternTableIndex(x, y) {
+    return y*PATTERN_TABLE_TILE_WIDTH + x;
+}
+
+function nameTableIndex(x, y) {
+    return y*NAME_TABLE_TILE_WIDTH + x;
+}
+
+function attributeTableIndex(x, y) {
+    return y*ATTRIBUTE_TABLE_TILE_WIDTH + x;
+}
 
 function Gui() {
     this.colorPicker = new ColorPicker();
@@ -260,7 +274,7 @@ Gui.prototype.renderPatternTableCanvas = function(model) {
     let colorArray = model.colors[model.curPalette];
     for (let y = 0; y < PATTERN_TABLE_TILE_HEIGHT; ++y) {
         for (let x = 0; x < PATTERN_TABLE_TILE_WIDTH; ++x) {
-            let tile = y*PATTERN_TABLE_TILE_WIDTH + x;
+            let tile = patternTableIndex(x, y);
             let pixelX = x*TILE_SIZE;
             let pixelY = y*TILE_SIZE;
             Gui.renderTile(ctx, model.curChr, tile, {
@@ -350,7 +364,7 @@ function main() {
     gui.patternTableCanvas.addEventListener("click", (e) => {
         let tileX = Math.floor(e.offsetX / TILE_SIZE);
         let tileY = Math.floor(e.offsetY / TILE_SIZE);
-        model.curTile = tileY * PATTERN_TABLE_TILE_WIDTH + tileX;
+        model.curTile = patternTableIndex(tileX, tileY);
         gui.renderCurTileCanvas(model);
     });
 
