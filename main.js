@@ -302,6 +302,44 @@ Gui.prototype.renderTilePaletteSection = function(model) {
     this.renderCurTileCanvas(model);
 };
 
+Gui.prototype.renderAttributeTableTile = function(model, attrX, attrY) {
+    let tileX = 2*attrX;
+    let tileY = 2*attrY;
+
+    let attribute = model.attributes[attributeTableIndex(attrX, attrY)];
+    let colorArray = model.colors[attribute];
+    let ctx = this.nameTableCanvas.getContext("2d");
+    for (let dy = 0; dy < 2; ++dy) {
+        for (let dx = 0; dx < 2; ++dx) {
+            let tile = model.tiles[nameTableIndex(tileX+dx, tileY+dy)];
+            Gui.renderTile(ctx, model.curChr, tile, {
+                x: (tileX+dx)*TILE_SIZE,
+                y: (tileY+dy)*TILE_SIZE,
+                colorArray: colorArray,
+                scale: TILE_SCALE,
+            });
+        }
+    }
+}
+
+Gui.prototype.renderNameTableAll = function(model) {
+    for (let y = 0; y < ATTRIBUTE_TABLE_TILE_HEIGHT; ++y) {
+        for (let x = 0; x < ATTRIBUTE_TABLE_TILE_WIDTH; ++x) {
+            this.renderAttributeTableTile(model, x, y);
+        }
+    }
+};
+
+Gui.prototype.renderNameTableAllFilterPalette = function(model, palette) {
+    for (let y = 0; y < ATTRIBUTE_TABLE_TILE_HEIGHT; ++y) {
+        for (let x = 0; x < ATTRIBUTE_TABLE_TILE_WIDTH; ++x) {
+            if (model.attributes[attributeTableIndex(x, y)] == palette) {
+                this.renderAttributeTableTile(model, x, y);
+            }
+        }
+    }
+}
+
 
 function GuiModel() {
     this.curTile = 0;
@@ -315,6 +353,9 @@ function GuiModel() {
     ];
 
     this.curChr = null;
+
+    this.tiles = Array(NAME_TABLE_TILE_WIDTH*NAME_TABLE_TILE_HEIGHT).fill(0);
+    this.attributes = Array(ATTRIBUTE_TABLE_TILE_WIDTH*ATTRIBUTE_TABLE_TILE_HEIGHT).fill(0);
 }
 
 var MODEL
@@ -346,9 +387,11 @@ function main() {
                 model.colors[i][0] = colorValue;
                 gui.paletteOptionList.options[i].buttons[0].setColor(colorValue);
             }
+            gui.renderNameTableAll(model);
         } else {
             model.colors[palette][color] = colorValue;
             gui.paletteOptionList.options[palette].buttons[color].setColor(colorValue);
+            gui.renderNameTableAllFilterPalette(model, palette);
         }
 
         if (updatingCurPatternTableCanvas) {
@@ -358,6 +401,7 @@ function main() {
 
     gui.patternTableFileLoad.addOnLoad((e, input, value) => {
         model.curChr = value;
+        gui.renderNameTableAll(model);
         gui.renderTilePaletteSection(model);
     });
 
@@ -367,6 +411,26 @@ function main() {
         model.curTile = patternTableIndex(tileX, tileY);
         gui.renderCurTileCanvas(model);
     });
+
+
+    let nameTableMouseDraw = (e) => {
+        let m1Down = e.buttons & 1;
+        if (!m1Down) {
+            return;
+        }
+
+        let tileX = Math.floor(e.offsetX / TILE_SIZE);
+        let tileY = Math.floor(e.offsetY / TILE_SIZE);
+        let attrX = Math.floor(tileX / 2);
+        let attrY = Math.floor(tileY / 2);
+
+        model.tiles[nameTableIndex(tileX, tileY)] = model.curTile;
+        model.attributes[attributeTableIndex(attrX, attrY)] = model.curPalette;
+        gui.renderAttributeTableTile(model, attrX, attrY);
+    };
+
+    gui.nameTableCanvas.addEventListener("mousemove", nameTableMouseDraw);
+    gui.nameTableCanvas.addEventListener("mousedown", nameTableMouseDraw);
 
     MODEL = model
 }
