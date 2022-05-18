@@ -231,6 +231,7 @@ function Gui() {
     this.colorPicker.hide();
     this.paletteOptionList = new PaletteOptionList();
     this.patternTableFileLoad = new BinaryFileLoad(document.getElementById("pattern-table-file-load"));
+    this.nameTableDownload = document.getElementById("name-table-download");
 
     let nameTableCanvas = document.getElementById("name-table-canvas");
     let patternTableCanvas = document.getElementById("pattern-table-canvas");
@@ -431,6 +432,11 @@ function main() {
 
     gui.nameTableCanvas.addEventListener("mousemove", nameTableMouseDraw);
     gui.nameTableCanvas.addEventListener("mousedown", nameTableMouseDraw);
+
+    gui.nameTableDownload.addEventListener("click", (e) => {
+        let map = serializeNameTable(model.tiles, model.attributes);
+        gui.nameTableDownload.href = `data:application/octet-stream;base64,${btoa(map)}`;
+    })
 
     MODEL = model
 }
