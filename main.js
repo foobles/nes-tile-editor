@@ -434,9 +434,10 @@ function main() {
     gui.nameTableCanvas.addEventListener("mousedown", nameTableMouseDraw);
 
     gui.nameTableDownload.addEventListener("click", (e) => {
-        let map = serializeNameTable(model.tiles, model.attributes);
-        gui.nameTableDownload.href = `data:application/octet-stream;base64,${btoa(map)}`;
-    })
+        let data = compress(serializeNameTable(model.tiles, model.attributes));
+        let base64 = btoa(toBinString(data));
+        gui.nameTableDownload.href = `data:application/octet-stream;base64,${base64}`;
+    });
 
     MODEL = model
 }
