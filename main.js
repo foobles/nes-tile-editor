@@ -231,6 +231,7 @@ function Gui() {
     this.colorPicker.hide();
     this.paletteOptionList = new PaletteOptionList();
     this.patternTableFileLoad = new BinaryFileLoad(document.getElementById("pattern-table-file-load"));
+    this.nameTableFileLoad = new BinaryFileLoad(document.getElementById("name-table-file-load"));
     this.nameTableDownload = document.getElementById("name-table-download");
 
     let nameTableCanvas = document.getElementById("name-table-canvas");
@@ -404,6 +405,11 @@ function main() {
         model.curChr = value;
         gui.renderNameTableAll(model);
         gui.renderTilePaletteSection(model);
+    });
+
+    gui.nameTableFileLoad.addOnLoad((e, input, value) => {
+        deserializeNameTable(model, decompress(value));
+        gui.renderNameTableAll(model);
     });
 
     gui.patternTableCanvas.addEventListener("click", (e) => {

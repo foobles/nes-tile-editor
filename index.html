@@ -17,8 +17,12 @@
                 <div class="row-container">
                     <div>
                         <div>
+                            <label>Load Name Table: </label>
+                            <input type="file" id="name-table-file-load">
+                        </div>
+                        <div>
                             <a download="map" id="name-table-download">
-                                <button> Download Tile Map </button>
+                                <button> Download Name Table </button>
                             </a>
                         </div>
                         <canvas class="tile-grid-canvas" id="name-table-canvas"></canvas>
@@ -27,6 +31,7 @@
 
                     <div>
                         <div>
+                            <label>Load Pattern Table: </label>
                             <input type="file" id="pattern-table-file-load">
                         </div>
                         <canvas class="tile-grid-canvas" id="pattern-table-canvas"></canvas>
@@ -65,5 +70,6 @@
 
         <script src="main.js"></script>
         <script src="serialize.js"></script>
+        <script src="deserialize.js"></script>
     </body>
 </html>
